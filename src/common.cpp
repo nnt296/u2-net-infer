@@ -370,4 +370,17 @@ GetThresholds(std::vector<int> &binaryLabels, std::vector<float> &scores) {
     return std::make_tuple(maxPrecisionThresh, maxRecallThresh, maxF1Thresh, accuracy);
 }
 
+int GetMaxAreaContourId(std::vector<std::vector<cv::Point>> contours) {
+    double maxArea = 0;
+    int maxAreaContourId = -1;
+    for (int j = 0; j < contours.size(); j++) {
+        double newArea = cv::contourArea(contours.at(j));
+        if (newArea > maxArea) {
+            maxArea = newArea;
+            maxAreaContourId = j;
+        } // End if
+    } // End for
+    return maxAreaContourId;
+} // End function
+
 #pragma clang diagnostic pop

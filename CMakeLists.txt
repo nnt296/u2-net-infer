@@ -4,6 +4,9 @@ project(salient-obj-detector)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+# Fix CMAKE configuration libtorch1.8.1 + co111 error failed to compute shorthash for libnvrtc.so
+find_package(PythonInterp REQUIRED)
+
 find_package(OpenCV 4.5.2 EXACT PATHS /opt/minus/libs/opencv-4.5.2 NO_DEFAULT_PATH)
 
 find_package(Torch 1.8.1 EXACT PATHS /opt/minus/libs/libtorch-gpu-1.8.1 NO_DEFAULT_PATH)

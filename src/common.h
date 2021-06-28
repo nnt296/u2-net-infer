@@ -52,4 +52,6 @@ ROC_Curve(std::vector<int> &binaryLabels, std::vector<float> &scores);
 std::tuple<float, float, float, float>
 GetThresholds(std::vector<int> &binaryLabels, std::vector<float> &scores);
 
+int GetMaxAreaContourId(std::vector<std::vector<cv::Point>> contours);
+
 #endif //FLEXIBLE_ID_VS_COMMON_H

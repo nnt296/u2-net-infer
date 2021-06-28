@@ -11,12 +11,11 @@ using namespace torch::indexing;
 
 int main() {
     SalientDetector sd("../models/u2net.pt", true);
-    cv::Mat im = cv::imread("/mnt/MinusAsian/Datasets/image_border.png");
-    // SalientDetector::PreProcess(im);
-    auto output = sd.Infer(im);
-
-    cv::imshow("image", output);
+    cv::Mat im = cv::imread("../models/crop_image.png");
+    // cv::resize(im, im, cv::Size(), 0.3, 0.3, cv::INTER_CUBIC);
+    // auto output = sd.Infer(im);
+    auto mask = sd.FindBinaryMask(im, 0.1);
+    cv::imshow("mask", mask);
+    cv::imwrite("../models/output_mask.png", mask);
     cv::waitKey(0);
-
-    std::cout << output.size() << std::endl;
 }

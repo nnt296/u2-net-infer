@@ -17,6 +17,8 @@ public:
 
     ~SalientDetector();
 
+    cv::Mat FindBinaryMask(cv::Mat &cropImage, float threshold = 0.1);
+
     cv::Mat Infer(cv::Mat &srcImage);
 
     static at::Tensor PreProcess(cv::Mat &srcImage);

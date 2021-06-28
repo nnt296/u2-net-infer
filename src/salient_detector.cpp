@@ -92,3 +92,57 @@ at::Tensor SalientDetector::PreProcess(cv::Mat &srcImage) {
 
     return tensor;
 }
+
+cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold) {
+    // First enlarge crop image
+    int w = cropImage.cols;
+    int h = cropImage.rows;
+
+    cv::Mat enlarged;
+    cv::copyMakeBorder(cropImage, enlarged, h / 2, h / 2, w / 2, w / 2, cv::BORDER_REPLICATE);
+
+    // Run inference
+    cv::Mat probMap = this->Infer(enlarged);
+
+    // Resize to enlarged
+    cv::resize(probMap, probMap, enlarged.size(), 0, 0, cv::INTER_LANCZOS4);
+
+    // Threshold for 1-0 value
+    cv::Mat threshIm;
+    cv::threshold(probMap, threshIm, threshold, 1., cv::THRESH_BINARY);
+
+    // Convert to 8UC1
+    threshIm = threshIm * 255;
+    threshIm.convertTo(threshIm, CV_8UC1);
+
+    // Find & visualize contours
+    std::vector<std::vector<cv::Point> > contours;
+    findContours(threshIm, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // Naive check if cannot find any salient object
+    if (contours.empty())
+        return cv::Mat();
+
+    int maxIdx = GetMaxAreaContourId(contours);
+    cv::drawContours(threshIm, contours, maxIdx, cv::Scalar(255), cv::FILLED);
+    cv::drawContours(enlarged, contours, maxIdx, cv::Scalar(255), 3);
+
+    // Crop back to normal
+    cv::Mat rotated, binMask;
+    cv::RotatedRect rect = cv::minAreaRect(contours[maxIdx]);
+    cv::Mat M1 = getRotationMatrix2D(rect.center, rect.angle, 1.0);
+    cv::warpAffine(threshIm, rotated, M1, threshIm.size(), cv::INTER_LANCZOS4);
+    cv::getRectSubPix(rotated, rect.size, rect.center, binMask);
+
+    // Add a little padding
+    // Padding size of max(10 % max_size, 10 pixels)
+    int maskWidth = binMask.cols;
+    int maskHeight = binMask.rows;
+    int maxSize = (maskWidth > maskHeight) ? maskWidth : maskHeight;
+    int padSize = int((float) maxSize * 0.05);
+    padSize = (padSize > 10) ? padSize : 10;
+    cv::copyMakeBorder(binMask, binMask, padSize, padSize, padSize, padSize, cv::BORDER_CONSTANT, cv::Scalar(0));
+    cv::cvtColor(binMask, binMask, cv::COLOR_GRAY2BGR);
+
+    return binMask;
+}
