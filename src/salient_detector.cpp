@@ -93,7 +93,7 @@ at::Tensor SalientDetector::PreProcess(cv::Mat &srcImage) {
     return tensor;
 }
 
-cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold) {
+cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold, float dilateRatio) {
     // First enlarge crop image
     int w = cropImage.cols;
     int h = cropImage.rows;
@@ -125,24 +125,22 @@ cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold) {
 
     int maxIdx = GetMaxAreaContourId(contours);
     cv::drawContours(threshIm, contours, maxIdx, cv::Scalar(255), cv::FILLED);
-    cv::drawContours(enlarged, contours, maxIdx, cv::Scalar(255), 3);
 
-    // Crop back to normal
-    cv::Mat rotated, binMask;
-    cv::RotatedRect rect = cv::minAreaRect(contours[maxIdx]);
-    cv::Mat M1 = getRotationMatrix2D(rect.center, rect.angle, 1.0);
-    cv::warpAffine(threshIm, rotated, M1, threshIm.size(), cv::INTER_LANCZOS4);
-    cv::getRectSubPix(rotated, rect.size, rect.center, binMask);
+    cv::Rect roi(w/2, h/2, w, h);
+    threshIm = threshIm(roi);
 
-    // Add a little padding
-    // Padding size of max(10 % max_size, 10 pixels)
-    int maskWidth = binMask.cols;
-    int maskHeight = binMask.rows;
+    // Dilate mask
+    int maskWidth = threshIm.cols;
+    int maskHeight = threshIm.rows;
     int maxSize = (maskWidth > maskHeight) ? maskWidth : maskHeight;
-    int padSize = int((float) maxSize * 0.05);
-    padSize = (padSize > 10) ? padSize : 10;
-    cv::copyMakeBorder(binMask, binMask, padSize, padSize, padSize, padSize, cv::BORDER_CONSTANT, cv::Scalar(0));
-    cv::cvtColor(binMask, binMask, cv::COLOR_GRAY2BGR);
 
-    return binMask;
+    // Kernel size of max(10 % max_size, 10 pixels)
+    int kernelSize = int((float) maxSize * dilateRatio);
+
+    // Dilate with rectangular structure, so that the bordering will
+    auto kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernelSize, kernelSize));
+    cv::dilate(threshIm, threshIm, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
+               cv::morphologyDefaultBorderValue());
+
+    return threshIm;
 }
