@@ -13,11 +13,11 @@ find_package(Torch 1.8.1 EXACT PATHS /opt/minus/libs/libtorch-gpu-1.8.1 NO_DEFAU
 
 SET(SRC_FILES ${SRC_FILES}
         src/salient_detector.cpp
-        src/common.cpp)
+        src/sd_utils.cpp)
 
 SET(HEADER_FILES ${HEADER_FILES}
         src/salient_detector.h
-        src/common.h)
+        src/sd_utils.h)
 
 add_executable(
         ${PROJECT_NAME}

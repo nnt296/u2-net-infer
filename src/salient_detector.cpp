@@ -1,5 +1,5 @@
 #include "salient_detector.h"
-#include "common.h"
+#include "sd_utils.h"
 
 using namespace torch::indexing;
 

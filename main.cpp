@@ -1,8 +1,5 @@
 #include "opencv2/opencv.hpp"
 #include "torch/script.h"
-#include <torch/torch.h>
-
-#include "src/common.h"
 #include "src/salient_detector.h"
 
 
