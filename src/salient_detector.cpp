@@ -56,8 +56,9 @@ cv::Mat SalientDetector::Infer(cv::Mat &srcImage) {
         auto minV = torch::min(d1);
 
         d1 = (d1 - minV) / (maxV - minV);
+        d1 = d1.cpu();
 
-        scoreMap = ToCvImage(d1.cpu(), CV_32FC1);
+        scoreMap = ToCvImage(d1, CV_32FC1);
         // cv::resize(scoreMap, scoreMap, srcImage.size(), 0, 0, cv::INTER_LINEAR);
     }
 
