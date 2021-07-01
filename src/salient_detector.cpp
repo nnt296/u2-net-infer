@@ -16,7 +16,7 @@ SalientDetector::SalientDetector(const std::string &modelPath, bool useGPU) {
     try {
         // Deserialize the ScriptModule from a file using torch::jit::load().
         // Make sure ScriptModule is saved on CPU when being exported
-        model = torch::jit::load("../models/u2net.pt");
+        model = torch::jit::load(modelPath);
     }
     catch (const c10::Error &e) {
         std::cerr << "Error loading Segmentation model\n";
