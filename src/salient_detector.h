@@ -17,7 +17,9 @@ public:
 
     ~SalientDetector();
 
-    cv::Mat FindBinaryMask(cv::Mat &cropImage, float threshold = 0.1, float dilateRatio = 0.05);
+    cv::Mat FindBinaryMask(cv::Mat &cropImage, float threshold = 0.1);
+
+    static cv::Mat DilateBinaryMask(cv::Mat &binaryMask, float dilateRatio = 0.05);
 
     cv::Mat Infer(cv::Mat &srcImage);
 

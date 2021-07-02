@@ -79,8 +79,8 @@ at::Tensor SalientDetector::PreProcess(cv::Mat &srcImage) {
 
 
     // Normalize, output normalized tensor float32
-    auto mean = at::tensor(at::ArrayRef < float > ({ 0.485, 0.456, 0.406 }));
-    auto std = at::tensor(at::ArrayRef < float > ({ 0.229, 0.224, 0.225 }));
+    auto mean = at::tensor(at::ArrayRef<float>({0.485, 0.456, 0.406}));
+    auto std = at::tensor(at::ArrayRef<float>({0.229, 0.224, 0.225}));
     auto maxV = torch::max(tensor);
 
     tensor = tensor.toType(at::kFloat).div(maxV).sub(mean).div(std);
@@ -94,7 +94,7 @@ at::Tensor SalientDetector::PreProcess(cv::Mat &srcImage) {
     return tensor;
 }
 
-cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold, float dilateRatio) {
+cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold) {
     // First enlarge crop image
     int w = cropImage.cols;
     int h = cropImage.rows;
@@ -127,12 +127,16 @@ cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold, flo
     int maxIdx = GetMaxAreaContourId(contours);
     cv::drawContours(threshIm, contours, maxIdx, cv::Scalar(255), cv::FILLED);
 
-    cv::Rect roi(w/2, h/2, w, h);
+    cv::Rect roi(w / 2, h / 2, w, h);
     threshIm = threshIm(roi);
 
+    return threshIm;
+}
+
+cv::Mat SalientDetector::DilateBinaryMask(cv::Mat &binaryMask, float dilateRatio) {
     // Dilate mask
-    int maskWidth = threshIm.cols;
-    int maskHeight = threshIm.rows;
+    int maskWidth = binaryMask.cols;
+    int maskHeight = binaryMask.rows;
     int maxSize = (maskWidth > maskHeight) ? maskWidth : maskHeight;
 
     // Kernel size of max(10 % max_size, 10 pixels)
@@ -140,12 +144,12 @@ cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold, flo
 
     // If 0 or negative size, return raw
     if (kernelSize < 1)
-        return threshIm;
+        return binaryMask;
 
     // Dilate with rectangular structure, so that the bordering will
     auto kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernelSize, kernelSize));
-    cv::dilate(threshIm, threshIm, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
+    cv::dilate(binaryMask, binaryMask, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
                cv::morphologyDefaultBorderValue());
 
-    return threshIm;
+    return binaryMask;
 }
