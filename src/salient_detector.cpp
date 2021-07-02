@@ -3,6 +3,8 @@
 
 using namespace torch::indexing;
 
+SalientDetector::SalientDetector() = default;
+
 SalientDetector::SalientDetector(const std::string &modelPath, bool useGPU) {
     if (useGPU) {
         if (torch::cuda::is_available()) {

@@ -13,6 +13,8 @@ private:
     torch::Device device = torch::kCPU;
 
 public:
+    SalientDetector();
+
     explicit SalientDetector(const std::string &modelPath, bool useGPU = false);
 
     ~SalientDetector();
