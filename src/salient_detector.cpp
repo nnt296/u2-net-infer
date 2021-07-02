@@ -134,6 +134,8 @@ cv::Mat SalientDetector::FindBinaryMask(cv::Mat &cropImage, float threshold) {
 }
 
 cv::Mat SalientDetector::DilateBinaryMask(cv::Mat &binaryMask, float dilateRatio) {
+    cv::Mat out = binaryMask.clone();
+
     // Dilate mask
     int maskWidth = binaryMask.cols;
     int maskHeight = binaryMask.rows;
@@ -144,12 +146,12 @@ cv::Mat SalientDetector::DilateBinaryMask(cv::Mat &binaryMask, float dilateRatio
 
     // If 0 or negative size, return raw
     if (kernelSize < 1)
-        return binaryMask;
+        return out;
 
     // Dilate with rectangular structure, so that the bordering will
     auto kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernelSize, kernelSize));
-    cv::dilate(binaryMask, binaryMask, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
+    cv::dilate(binaryMask, out, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
                cv::morphologyDefaultBorderValue());
 
-    return binaryMask;
+    return out;
 }
