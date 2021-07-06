@@ -178,18 +178,8 @@ cv::Mat SalientDetector::RefineMask(cv::Mat &raw, cv::Mat &rawMask, float thresh
     cv::copyMakeBorder(newMask, newMask, offset_top, offset_btm, offset_left, offset_right,
                        cv::BORDER_CONSTANT, cv::Scalar(0));
 
-    std::cout << "RAW: " << raw.size() << " NEW: " << newMask.size() << std::endl;
-
-    cv::imshow("raw", raw);
-    cv::imshow("src mask", srcMask);
-    cv::imshow("dst mask", newMask);
-
-    VisualizeLargestContour(raw, newMask);
-    cv::imshow("visualize", raw);
-
     cv::Mat result(newMask.size(), CV_8UC1, cv::Scalar(0));
     VisualizeLargestContour(result, newMask);
-    cv::imshow("visualize2", result);
 
     return result;
 }
@@ -216,6 +206,8 @@ std::pair<cv::Mat, cv::Mat> SalientDetector::CropMaskByContour(cv::Mat &raw, cv:
     if (expandRatio > 0 && expandRatio < 1) {
         cv::Point shiftPixel(int((float) rect.width * expandRatio / 2), int((float) rect.height * expandRatio / 2));
         cv::Size newSize(int((float) rect.width * expandRatio), int((float) rect.height * expandRatio));
+        // Shift center to tl by shiftPixel
+        // Expand rect by adding newSize
         rect -= shiftPixel;
         rect += newSize;
     }
