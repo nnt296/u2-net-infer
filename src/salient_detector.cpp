@@ -157,3 +157,74 @@ cv::Mat SalientDetector::DilateBinaryMask(cv::Mat &binaryMask, float dilateRatio
 
     return out;
 }
+
+cv::Mat SalientDetector::RefineMask(cv::Mat &raw, cv::Mat &rawMask, float threshold) {
+    cv::Mat srcMask;
+    if (rawMask.channels() != 1)
+        cv::cvtColor(rawMask, srcMask, cv::COLOR_BGR2GRAY);
+    else
+        srcMask = rawMask;
+
+    cv::Rect boundingRect = GetBoundingRect(srcMask);
+
+    int offset_top = boundingRect.tl().y;
+    int offset_left = boundingRect.tl().x;
+    int offset_btm = raw.size().height - boundingRect.br().y;
+    int offset_right = raw.size().width - boundingRect.br().x;
+
+    cv::Mat cropped = raw(boundingRect);
+    cv::Mat newMask = this->FindBinaryMask(cropped, threshold);
+
+    cv::copyMakeBorder(newMask, newMask, offset_top, offset_btm, offset_left, offset_right,
+                       cv::BORDER_CONSTANT, cv::Scalar(0));
+
+    std::cout << "RAW: " << raw.size() << " NEW: " << newMask.size() << std::endl;
+
+    cv::imshow("raw", raw);
+    cv::imshow("src mask", srcMask);
+    cv::imshow("dst mask", newMask);
+
+    VisualizeLargestContour(raw, newMask);
+    cv::imshow("visualize", raw);
+
+    cv::Mat result(newMask.size(), CV_8UC1, cv::Scalar(0));
+    VisualizeLargestContour(result, newMask);
+    cv::imshow("visualize2", result);
+
+    return result;
+}
+
+std::pair<cv::Mat, cv::Mat> SalientDetector::CropMaskByContour(cv::Mat &raw, cv::Mat &mask, float expandRatio) {
+    cv::Mat binMask;
+
+    if (mask.channels() != 1)
+        cv::cvtColor(mask, binMask, cv::COLOR_BGR2GRAY);
+    else
+        binMask = mask;
+
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(binMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    int index = GetMaxAreaContourId(contours);
+
+    if (index < 0)
+        throw std::runtime_error("No contours found");
+
+    cv::drawContours(binMask, contours, index, cv::Scalar(255, 255, 255), -1);
+
+    cv::Rect rect = GetBoundingRect(binMask);
+
+    if (expandRatio > 0 && expandRatio < 1) {
+        cv::Point shiftPixel(int((float) rect.width * expandRatio / 2), int((float) rect.height * expandRatio / 2));
+        cv::Size newSize(int((float) rect.width * expandRatio), int((float) rect.height * expandRatio));
+        rect -= shiftPixel;
+        rect += newSize;
+    }
+
+    cv::Mat croppedRaw = raw(rect);
+    cv::Mat croppedMask = binMask(rect);
+
+    // Convert to 3D for & operation with BGR croppedRaw
+    cv::cvtColor(croppedMask, croppedMask, cv::COLOR_GRAY2BGR);
+
+    return std::make_pair(croppedRaw, croppedMask);
+}

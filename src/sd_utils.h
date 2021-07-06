@@ -10,8 +10,14 @@ at::Tensor ToTensor(cv::Mat &img);
 
 std::vector<torch::jit::IValue> ToInput(at::Tensor tensor_image);
 
-cv::Mat ToCvImage(at::Tensor &tensor, int cvType=CV_8UC3);
+cv::Mat ToCvImage(at::Tensor &tensor, int cvType = CV_8UC3);
 
 int GetMaxAreaContourId(std::vector<std::vector<cv::Point>> contours);
+
+// Get bounding box of binary mask
+cv::Rect GetBoundingRect(cv::Mat &mask);
+
+// Drawn bounding contours
+void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask);
 
 #endif //FLEXIBLE_ID_VS_COMMON_H

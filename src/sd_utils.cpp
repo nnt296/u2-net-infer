@@ -54,14 +54,42 @@ cv::Mat ToCvImage(at::Tensor &tensor, int cvType) {
 int GetMaxAreaContourId(std::vector<std::vector<cv::Point>> contours) {
     double maxArea = 0;
     int maxAreaContourId = -1;
+    // For loop check size
     for (int j = 0; j < contours.size(); j++) {
         double newArea = cv::contourArea(contours.at(j));
         if (newArea > maxArea) {
             maxArea = newArea;
             maxAreaContourId = j;
-        } // End if
-    } // End for
+        }
+    }
     return maxAreaContourId;
-} // End function
+}
+
+cv::Rect GetBoundingRect(cv::Mat &mask) {
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    int index = GetMaxAreaContourId(contours);
+
+    if (index < 0)
+        throw std::runtime_error("No contours found");
+
+    std::vector<cv::Point> contours_poly;
+    cv::approxPolyDP(contours[index], contours_poly, 3, true);
+    cv::Rect rect = cv::boundingRect(contours_poly);
+
+    return rect;
+}
+
+void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask) {
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    int index = GetMaxAreaContourId(contours);
+
+    if (index < 0)
+        throw std::runtime_error("No contours found");
+
+    cv::drawContours(draw, contours, index, cv::Scalar(255, 255, 255), 1);
+}
+
 
 #pragma clang diagnostic pop
