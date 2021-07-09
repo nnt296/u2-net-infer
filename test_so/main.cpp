@@ -5,17 +5,34 @@ using namespace torch::indexing;
 
 
 int main() {
-    SalientDetector sd("/mnt/MinusAsian/u2-net-infer/models/u2net.pt", true);
-    cv::Mat im = cv::imread("/mnt/MinusAsian/u2-net-infer/models/crop_image.png");
-    // cv::resize(im, im, cv::Size(), 0.3, 0.3, cv::INTER_CUBIC);
-    // auto mask = sd.Infer(im);
-    auto mask = sd.FindBinaryMask(im, 0.1);
-    cv::imshow("mask", mask);
+    // Path/To/model_segment.pt
+    SalientDetector sd("../models/u2net.pt", true);
 
-    cv::cvtColor(mask, mask, cv::COLOR_GRAY2BGR);
-    cv::Mat object = mask & im;
-    cv::imshow("object", object);
+    // User's drawn image
+    cv::Mat mask = cv::imread("../models/drawn.png");
+    // Raw image on which user draws
+    cv::Mat im = cv::imread("../models/raw.bmp");
 
-    cv::imwrite("../models/output_mask.png", mask);
+    // THIS RESIZE FOR VISUALIZE ONLY
+    cv::resize(mask, mask, cv::Size(), 0.3, 0.3, cv::INTER_CUBIC);
+    cv::resize(im, im, cv::Size(), 0.3, 0.3, cv::INTER_CUBIC);
+
+    // Call this function to get refined boundary mask
+    // User recheck the mask & re-draw
+    // User's re-draw image will be the final mask
+    auto out = sd.RefineMask(im, mask);
+
+    // Input final mask to get "final cropped image & cropped mask"
+    cv::Mat oRaw, oMask;
+    std::tie(oRaw, oMask) = SalientDetector::CropMaskByContour(im, out, 0.08);
+    // Disable dilate
+    // std::tie(oRaw, oMask) = SalientDetector::CropMaskByContour(im, out, 0);
+
+    cv::imshow("out raw", oRaw);
+    cv::imshow("out mask", oMask);
+
+    oMask = SalientDetector::DilateBinaryMask(oMask, 0.05);
+    cv::imshow("out mask dilate", oMask);
+
     cv::waitKey(0);
 }

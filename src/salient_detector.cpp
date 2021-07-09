@@ -6,6 +6,8 @@ using namespace torch::indexing;
 SalientDetector::SalientDetector() = default;
 
 SalientDetector::SalientDetector(const std::string &modelPath, bool useGPU) {
+
+#ifdef USE_CUDA
     if (useGPU) {
         if (torch::cuda::is_available()) {
             std::cout << "CUDA is available!" << std::endl;
@@ -14,6 +16,7 @@ SalientDetector::SalientDetector(const std::string &modelPath, bool useGPU) {
             std::cout << "CUDA is not available! Switch back to default CPU" << std::endl;
         }
     }
+#endif
 
     try {
         // Deserialize the ScriptModule from a file using torch::jit::load().

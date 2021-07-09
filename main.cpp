@@ -1,8 +1,6 @@
 #include "opencv2/opencv.hpp"
 #include "torch/script.h"
 #include "src/salient_detector.h"
-#include "src/sd_utils.h"
-
 
 using namespace torch::indexing;
 
