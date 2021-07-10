@@ -80,7 +80,7 @@ cv::Rect GetBoundingRect(cv::Mat &mask) {
     return rect;
 }
 
-void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask) {
+void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask, int thickness) {
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     int index = GetMaxAreaContourId(contours);
@@ -88,7 +88,7 @@ void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask) {
     if (index < 0)
         throw std::runtime_error("No contours found");
 
-    cv::drawContours(draw, contours, index, cv::Scalar(255, 255, 255), 1);
+    cv::drawContours(draw, contours, index, cv::Scalar(255, 255, 255), thickness);
 }
 
 

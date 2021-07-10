@@ -38,7 +38,7 @@ public:
      *
      * @throw: std::runtime_error if cannot find any contour
      */
-    cv::Mat RefineMask(cv::Mat &raw, cv::Mat &rawMask, float threshold = 0.1);
+    cv::Mat RefineMask(cv::Mat &raw, cv::Mat &rawMask, float threshold = 0.1, int thickness = 2);
 
     /**
      * Crop an image given its binary mask using contour

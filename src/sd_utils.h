@@ -18,6 +18,6 @@ int GetMaxAreaContourId(std::vector<std::vector<cv::Point>> contours);
 cv::Rect GetBoundingRect(cv::Mat &mask);
 
 // Drawn bounding contours
-void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask);
+void VisualizeLargestContour(cv::Mat &draw, cv::Mat &mask, int thickness = 2);
 
 #endif //FLEXIBLE_ID_VS_COMMON_H

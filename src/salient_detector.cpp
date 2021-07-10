@@ -161,7 +161,7 @@ cv::Mat SalientDetector::DilateBinaryMask(cv::Mat &binaryMask, float dilateRatio
     return out;
 }
 
-cv::Mat SalientDetector::RefineMask(cv::Mat &raw, cv::Mat &rawMask, float threshold) {
+cv::Mat SalientDetector::RefineMask(cv::Mat &raw, cv::Mat &rawMask, float threshold, int thickness) {
     cv::Mat srcMask;
     if (rawMask.channels() != 1)
         cv::cvtColor(rawMask, srcMask, cv::COLOR_BGR2GRAY);
@@ -182,7 +182,7 @@ cv::Mat SalientDetector::RefineMask(cv::Mat &raw, cv::Mat &rawMask, float thresh
                        cv::BORDER_CONSTANT, cv::Scalar(0));
 
     cv::Mat result(newMask.size(), CV_8UC1, cv::Scalar(0));
-    VisualizeLargestContour(result, newMask);
+    VisualizeLargestContour(result, newMask, thickness);
 
     return result;
 }
