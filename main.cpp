@@ -18,7 +18,7 @@ int main() {
 
     cv::Mat oRaw, oMask;
 
-    std::tie(oRaw, oMask) = SalientDetector::CropMaskByContour(im, out, 0.08);
+    std::tie(oRaw, oMask) = SalientDetector::CropMaskByContour(im, out, true,0.08);
     // Disable dilate
     // std::tie(oRaw, oMask) = SalientDetector::CropMaskByContour(im, out, 0);
 

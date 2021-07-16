@@ -44,12 +44,16 @@ public:
      * Crop an image given its binary mask using contour
      * @param raw: raw BGR image
      * @param mask: User drawn mask (8UC3 or 8UC1)
+     * @param doWarpAffine: Whether to align object
      * @param expandRatio: Expand cropped image by a fraction
      * @return: pair of croppedRaw and filled croppedMask after dilation
      *
      * @throw: std::runtime_error if cannot find any contour
      */
-    static std::pair<cv::Mat, cv::Mat> CropMaskByContour(cv::Mat &raw, cv::Mat &mask, float expandRatio = 0.08);
+    static std::pair<cv::Mat, cv::Mat> CropMaskByContour(
+            cv::Mat &raw, cv::Mat &mask,
+            bool doWarpAffine = true,
+            float expandRatio = 0.08);
 
     /**
      * Output segmentation mask for COLOR input image

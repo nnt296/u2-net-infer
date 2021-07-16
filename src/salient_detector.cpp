@@ -187,7 +187,8 @@ cv::Mat SalientDetector::RefineMask(cv::Mat &raw, cv::Mat &rawMask, float thresh
     return result;
 }
 
-std::pair<cv::Mat, cv::Mat> SalientDetector::CropMaskByContour(cv::Mat &raw, cv::Mat &mask, float expandRatio) {
+std::pair<cv::Mat, cv::Mat> SalientDetector::CropMaskByContour(
+        cv::Mat &raw, cv::Mat &mask, bool doWarpAffine, float expandRatio) {
     cv::Mat binMask;
 
     if (mask.channels() != 1)
@@ -204,19 +205,44 @@ std::pair<cv::Mat, cv::Mat> SalientDetector::CropMaskByContour(cv::Mat &raw, cv:
 
     cv::drawContours(binMask, contours, index, cv::Scalar(255, 255, 255), -1);
 
-    cv::Rect rect = GetBoundingRect(binMask);
+    cv::Mat croppedRaw;
+    cv::Mat croppedMask;
 
-    if (expandRatio > 0 && expandRatio < 1) {
-        cv::Point shiftPixel(int((float) rect.width * expandRatio / 2), int((float) rect.height * expandRatio / 2));
-        cv::Size newSize(int((float) rect.width * expandRatio), int((float) rect.height * expandRatio));
-        // Shift center to tl by shiftPixel
-        // Expand rect by adding newSize
-        rect -= shiftPixel;
-        rect += newSize;
+    if (!doWarpAffine) {
+        cv::Rect rect = GetBoundingRect(binMask);
+
+        if (expandRatio > 0 && expandRatio < 1) {
+            cv::Point shiftPixel(int((float) rect.width * expandRatio / 2), int((float) rect.height * expandRatio / 2));
+            cv::Size newSize(int((float) rect.width * expandRatio), int((float) rect.height * expandRatio));
+            // Shift center to tl by shiftPixel
+            // Expand rect by adding newSize
+            rect -= shiftPixel;
+            rect += newSize;
+        }
+
+        croppedRaw = raw(rect);
+        croppedMask = binMask(rect);
+    } else {
+        cv::RotatedRect rect = cv::minAreaRect(contours[index]);
+
+        if (expandRatio > 0 && expandRatio < 1) {
+            cv::Size2f newSize(rect.size.width * expandRatio, rect.size.height * expandRatio);
+            rect.size += newSize;
+        }
+
+        cv::Mat M = getRotationMatrix2D(rect.center, rect.angle, 1.0);
+
+        // Assign = copy
+        croppedMask = binMask;
+        croppedRaw = raw;
+
+        cv::warpAffine(croppedMask, croppedMask, M, croppedMask.size(), cv::INTER_AREA,
+                       cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+        cv::warpAffine(croppedRaw, croppedRaw, M, croppedRaw.size(), cv::INTER_AREA,
+                       cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+        cv::getRectSubPix(croppedMask, rect.size, rect.center, croppedMask);
+        cv::getRectSubPix(croppedRaw, rect.size, rect.center, croppedRaw);
     }
-
-    cv::Mat croppedRaw = raw(rect);
-    cv::Mat croppedMask = binMask(rect);
 
     // Convert to 3D for & operation with BGR croppedRaw
     cv::cvtColor(croppedMask, croppedMask, cv::COLOR_GRAY2BGR);
