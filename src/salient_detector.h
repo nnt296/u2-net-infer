@@ -15,7 +15,7 @@ private:
 public:
     SalientDetector();
 
-    explicit SalientDetector(const std::string &modelPath, bool useGPU = false);
+    explicit SalientDetector(const std::string &modelPath, int gpuID = 0);
 
     ~SalientDetector();
 

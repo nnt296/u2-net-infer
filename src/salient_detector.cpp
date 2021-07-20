@@ -5,16 +5,20 @@ using namespace torch::indexing;
 
 SalientDetector::SalientDetector() = default;
 
-SalientDetector::SalientDetector(const std::string &modelPath, bool useGPU) {
+SalientDetector::SalientDetector(const std::string &modelPath, int gpuID) {
 
 #ifdef USE_CUDA
-    if (useGPU) {
+    if (gpuID >= 0) {
         if (torch::cuda::is_available()) {
-            std::cout << "CUDA is available!" << std::endl;
-            this->device = torch::kCUDA;
-        } else {
-            std::cout << "CUDA is not available! Switch back to default CPU" << std::endl;
-        }
+            // If GPU is available
+            if (gpuID < torch::cuda::device_count()) {
+                // If gpuID is valid
+                std::cout << "CUDA is available, running SD on GPU: " << gpuID << std::endl;
+                this->device = torch::Device(torch::kCUDA, (int8_t) gpuID);
+            } else
+                std::cout << "GPU: " << gpuID << " is not available, switch back to CPU" << std::endl;
+        } else
+            std::cout << "CUDA isn't available, switch back to CPU" << std::endl;
     }
 #endif
 
