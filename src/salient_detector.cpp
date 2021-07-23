@@ -30,6 +30,9 @@ SalientDetector::SalientDetector(const std::string &modelPath, int gpuID) {
     catch (const c10::Error &e) {
         std::cerr << "Error loading Segmentation model\n";
     }
+
+    // Move to device
+    this->model.to(this->device);
 }
 
 SalientDetector::~SalientDetector() = default;
@@ -40,7 +43,6 @@ cv::Mat SalientDetector::Infer(cv::Mat &srcImage) {
 
     // Change to evaluation mode to disable Batch norm or dropout
     this->model.eval();
-    this->model.to(this->device);
     // Disable gradient for memory saving.
     // This mode equivalent to "with torch.no_grad()" in python
     {
