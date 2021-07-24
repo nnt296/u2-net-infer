@@ -240,7 +240,7 @@ std::pair<cv::Mat, cv::Mat> SalientDetector::CropMaskByContour(
 
         // Assign = copy
         croppedMask = binMask;
-        croppedRaw = raw;
+        croppedRaw = raw.clone();
 
         cv::warpAffine(croppedMask, croppedMask, M, croppedMask.size(), cv::INTER_AREA,
                        cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
